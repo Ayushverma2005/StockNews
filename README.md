@@ -1,15 +1,15 @@
-## StockNews - Stock Company Sentiment Analysis 💹📰
-![Dashboard Screenshot](./docs/dashboard.png)
-The StockNews Dashboard is an AI-powered web application designed to provide support to investors and traders to analyze financial news sentiment for 3000+ NSE listed companies.
+## StockNews – Stock Company Sentiment Analysis 💹📰
+
+The StockNews Dashboard is an AI-powered web application designed to assist investors and traders in analyzing financial news sentiment across 3000+ NSE-listed companies.
 
 ---
 
 ## Tech Stack ⚙️
 
-- FastAPI + Uvicorn backend (Python 3.11)
-- Local FinBERT inference (PyTorch, Hugging Face Transformers)
-- Next.js 15 UI with Tailwind CSS
-- SQLite for stock master data and news caching
+* FastAPI with Uvicorn backend (Python 3.11)
+* Local FinBERT inference using PyTorch and Hugging Face Transformers
+* Next.js 15 frontend with Tailwind CSS
+* SQLite for stock master data and news caching
 
 ---
 
@@ -18,13 +18,13 @@ The StockNews Dashboard is an AI-powered web application designed to provide sup
 ```
 stock-sentiment-dashboard/
 ├── backend/
-│   ├── app/                 # FastAPI application + sentiment pipeline
+│   ├── app/                 # FastAPI application and sentiment pipeline
 │   ├── config/              # Runtime configuration stubs
-│   ├── data/                # SQLite DBs, NSE master CSV, cached news
-│   ├── finbert_training/    # Utilities to fine-tune/evaluate FinBERT
+│   ├── data/                # SQLite databases, NSE master CSV, cached news
+│   ├── finbert_training/    # Utilities for fine-tuning and evaluation
 │   └── requirements.txt
 ├── frontend/                # Next.js client (App Router)
-├── docs/                    # Design notes & planning docs
+├── docs/                    # Design notes and planning documents
 └── README.md
 ```
 
@@ -32,10 +32,10 @@ stock-sentiment-dashboard/
 
 ## Prerequisites 📌
 
-- Python **3.11** (recommended)
-- `pip` ≥ 23.x (or Poetry/Pipenv if you prefer)
-- Node.js **18.18+** (Next.js 15 compatible); Node 20/22 works well
-- JavaScript package manager (`pnpm` ≥ 9.x recommended, `npm` ≥ 10 also works)
+* Python **3.11** (recommended)
+* `pip` version 23 or higher (Poetry or Pipenv may also be used)
+* Node.js **18.18+** (compatible with Next.js 15; newer LTS versions also work)
+* A JavaScript package manager (`pnpm` recommended, `npm` or `yarn` supported)
 
 ---
 
@@ -60,19 +60,17 @@ stock-sentiment-dashboard/
 
 3. **Configure environment variables**
 
-   Create a `.env` file in the repository root (next to this README):
+   Create a `.env` file in the repository root:
 
    ```bash
-   cat <<'EOF' > .env
    GEMINI_API_KEY=your_google_gemini_key
    HUGGINGFACE_TOKEN=your_optional_hf_token
-   EOF
    ```
 
-   - `GEMINI_API_KEY` is required for the LLM-powered web search fallback.
-   - `HUGGINGFACE_TOKEN` is only needed if you access private models or push to Hugging Face Hub.
+   * `GEMINI_API_KEY` is required for the LLM-based web search fallback.
+   * `HUGGINGFACE_TOKEN` is optional and only needed for private models or Hub access.
 
-4. **Bootstrap the NSE stock database (first-time only)**
+4. **Initialize the NSE stock database (first-time setup)**
 
    ```bash
    cd backend
@@ -80,7 +78,7 @@ stock-sentiment-dashboard/
    cd ..
    ```
 
-   This reads `backend/data/nse_master.csv` and regenerates `backend/data/nse_stocks.db`.
+   This step reads the NSE master CSV file and generates the local stock database.
 
 5. **Start the FastAPI server**
 
@@ -89,18 +87,14 @@ stock-sentiment-dashboard/
    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
    ```
 
-   Uvicorn will expose the API at `http://localhost:8000`.
-
-6. **(Optional) Run the pipeline as a CLI sanity check**
-
-   In another terminal with the same virtual environment active:
+6. **Optional: Run the sentiment pipeline as a CLI check**
 
    ```bash
    cd backend
    python -m app.core.pipeline
    ```
 
-   The first invocation will download the FinBERT weights and can take a few minutes.
+   The first run may take several minutes as model weights are downloaded.
 
 ---
 
@@ -110,47 +104,41 @@ stock-sentiment-dashboard/
 
    ```bash
    cd frontend
-   pnpm install              # or: npm install / yarn install
+   pnpm install
    ```
 
-2. **Configure environment (optional)**
+2. **Optional environment configuration**
 
-   The default API base is `http://localhost:8000` (see `frontend/app/api/*/route.ts`). If you need to point to a different backend, create `frontend/.env.local` and add:
-
-   ```
-   NEXT_PUBLIC_API_BASE_URL=http://your-backend-host:8000
-   ```
-
-   Then update the fetch calls or create a small helper to read from that env var.
+   If a non-default backend is required, create a local environment file and define the API base URL. Update the frontend fetch helpers accordingly.
 
 3. **Start the development server**
 
    ```bash
-   pnpm dev                  # defaults to http://localhost:3000
+   pnpm dev
    ```
 
-   The Next.js server proxies API calls under `/api/*` to the backend routes.
+   The frontend runs in development mode and communicates with the backend API.
 
 ---
 
-## FinBERT Fine-Tuning & Evaluation Suite 📎
+## FinBERT Fine-Tuning and Evaluation Suite 📎
 
-Utilities for generating datasets, fine-tuning, and evaluating FinBERT live in `backend/finbert_training/`.
+The fine-tuning and evaluation utilities are located in `backend/finbert_training/`.
 
 ```bash
 cd backend/finbert_training
 
-# 1. Generate synthetic training / validation data
+# Generate synthetic training and validation data
 python dataset_preparation.py --out_dir data --synth_per_class 800 --seed 42
 
-# 2. Fine-tune FinBERT on the generated data
+# Fine-tune FinBERT
 python model_finetune.py \
   --train_csv data/synthetic_train.csv \
   --val_csv data/synthetic_val.csv \
   --output_dir models/finetuned_finbert \
   --epochs 3 --batch_size 16 --lr 2e-5 --fp16 false
 
-# 3. Evaluate against a labelled test set (replace with your real test CSV)
+# Evaluate against a labelled test dataset
 python evaluation.py \
   --test_csv data/real_test.csv \
   --model_dir models/finetuned_finbert \
@@ -158,21 +146,18 @@ python evaluation.py \
   --report_path reports/metrics.json
 ```
 
-Model artifacts can be pointed to by updating `backend/app/core/finbert_client.py` if you want the API to use your fine-tuned weights.
+To use a fine-tuned model in the API, update the model path in `backend/app/core/finbert_client.py`.
 
 ---
 
-## Data & Storage Notes 📝
+## Data and Storage Notes 📝
 
-- `backend/data/nse_master.csv` holds the latest NSE master list; update it periodically and rerun `db_setup`.
-- `backend/data/nse_stocks.db` is regenerated by the setup script; commit only if it is intended as seed data.
-- `backend/data/news_cache.db` grows as the pipeline caches articles. Delete it to force fresh news collection.
+* The NSE master CSV should be updated periodically and followed by re-running the database setup.
+* The generated stock database is intended as derived data and should only be committed if used as seed data.
+* The news cache database grows over time; deleting it will force fresh news collection.
 
 ---
 
 ### 📌 Copyright
 
-© 2025 Stock Sentiment Dashboard. All Rights Reserved.
-
-
-
+© 2025 Stock Sentiment Dashboard. All rights reserved.
